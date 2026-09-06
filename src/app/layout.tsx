@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/Providers";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,6 +23,10 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Stint",
   },
+  other: {
+    // iOS Safari の一部バージョンは標準の mobile-web-app-capable を見ないため明示する
+    "apple-mobile-web-app-capable": "yes",
+  },
   icons: {
     icon: [
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -32,11 +37,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#111827",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4f4f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0b10" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -45,7 +54,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-50 text-gray-900">
+      <body className="min-h-full flex flex-col">
+        <ServiceWorkerRegister />
         <Providers>{children}</Providers>
       </body>
     </html>

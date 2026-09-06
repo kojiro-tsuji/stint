@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { useToast, ToastViewport } from "@/components/Toast";
@@ -10,7 +11,8 @@ import type { PresetNode } from "@/types";
 
 type PresetsResponse = { presets: PresetNode[] };
 
-const DEFAULT_COLOR = "#9ca3af";
+const DEFAULT_COLOR = "#6366f1";
+const SWATCHES = ["#6366f1", "#ec4899", "#f97316", "#eab308", "#22c55e", "#14b8a6", "#0ea5e9", "#8b5cf6"];
 
 function countDescendants(node: PresetNode): number {
   return node.children.reduce((sum, c) => sum + 1 + countDescendants(c), 0);
@@ -24,49 +26,69 @@ export function PresetManager() {
   const presets = data?.presets ?? [];
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-4 px-4 py-6">
-      <header className="flex items-center justify-between">
-        <Link href="/" className="text-sm text-gray-500 hover:underline">
-          ‹ メインへ戻る
+    <div className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 px-5 py-6">
+      <header className="flex items-center gap-3" style={{ paddingTop: "calc(var(--safe-top) + 0.5rem)" }}>
+        <Link
+          href="/"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-lg"
+          style={{ background: "var(--surface-border)" }}
+          aria-label="メインへ戻る"
+        >
+          ‹
         </Link>
-        <h1 className="text-base font-bold">プリセット管理</h1>
-        <span className="w-16" aria-hidden="true" />
+        <h1 className="text-xl font-bold tracking-tight">設定</h1>
       </header>
 
-      {isLoading ? (
-        <p className="text-center text-sm text-gray-400">読み込み中…</p>
-      ) : presets.length === 0 && !creatingRoot ? (
-        <p className="rounded-2xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
-          プリセットがまだありません。下のボタンから追加してください。
+      <section className="flex flex-col gap-2">
+        <h2 className="px-1 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+          タスクプリセット
+        </h2>
+        <p className="px-1 text-xs" style={{ color: "var(--muted)" }}>
+          スワイプ開始時に選ぶタスクの種類を、最大3階層まで作成できます。
         </p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {presets.map((node) => (
-            <PresetNodeItem key={node.id} node={node} onChange={() => mutate()} onError={(m) => show(m, "error")} />
-          ))}
-        </ul>
-      )}
 
-      {creatingRoot ? (
-        <PresetForm
-          mode="create"
-          parentId={null}
-          onCancel={() => setCreatingRoot(false)}
-          onDone={async () => {
-            setCreatingRoot(false);
-            await mutate();
-          }}
-          onError={(m) => show(m, "error")}
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setCreatingRoot(true)}
-          className="rounded-full border border-dashed border-gray-300 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
-        >
-          ＋ 新しいプリセットを追加
-        </button>
-      )}
+        {isLoading ? (
+          <p className="text-center text-sm" style={{ color: "var(--muted)" }}>
+            読み込み中…
+          </p>
+        ) : presets.length === 0 && !creatingRoot ? (
+          <div className="surface-card rounded-3xl border-dashed p-6 text-center text-sm" style={{ color: "var(--muted)" }}>
+            プリセットがまだありません。下のボタンから追加してください。
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {presets.map((node) => (
+              <PresetNodeItem key={node.id} node={node} onChange={() => mutate()} onError={(m) => show(m, "error")} />
+            ))}
+          </ul>
+        )}
+
+        <AnimatePresence initial={false}>
+          {creatingRoot && (
+            <PresetForm
+              mode="create"
+              parentId={null}
+              onCancel={() => setCreatingRoot(false)}
+              onDone={async () => {
+                setCreatingRoot(false);
+                await mutate();
+              }}
+              onError={(m) => show(m, "error")}
+            />
+          )}
+        </AnimatePresence>
+
+        {!creatingRoot && (
+          <button
+            type="button"
+            onClick={() => setCreatingRoot(true)}
+            className="rounded-2xl border border-dashed px-4 py-3 text-sm font-medium transition-colors"
+            style={{ borderColor: "var(--surface-border)", color: "var(--accent)" }}
+          >
+            ＋ 新しいプリセットを追加
+          </button>
+        )}
+      </section>
 
       <ToastViewport toast={toast} />
     </div>
@@ -129,98 +151,100 @@ function PresetNodeItem({
 
   return (
     <li>
-      <div
-        className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 ${
-          node.archived ? "border-gray-200 bg-gray-50 opacity-60" : "border-gray-200 bg-white"
-        }`}
-      >
+      <div className={`surface-card flex items-center gap-2 rounded-2xl px-3 py-3 ${node.archived ? "opacity-50" : ""}`}>
         <span
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          className="h-3 w-3 shrink-0 rounded-full"
           style={{ backgroundColor: node.color ?? DEFAULT_COLOR }}
           aria-hidden="true"
         />
-        <span className="flex-1 truncate text-sm text-gray-800">
+        <span className="min-w-0 flex-1 truncate text-[15px]">
           {node.name}
-          {node.archived && <span className="ml-2 text-xs text-gray-400">（アーカイブ済み）</span>}
+          {node.archived && (
+            <span className="ml-2 text-xs" style={{ color: "var(--muted)" }}>
+              （アーカイブ済み）
+            </span>
+          )}
         </span>
         <div className="flex shrink-0 items-center gap-1 text-xs">
           {node.depth < MAX_DEPTH && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setAddingChild((v) => !v)}
-              className="rounded-full bg-gray-100 px-2.5 py-1 text-gray-600 hover:bg-gray-200"
-            >
-              追加
-            </button>
+            <IconButton label="追加" disabled={busy} onClick={() => setAddingChild((v) => !v)} />
           )}
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => setEditing((v) => !v)}
-            className="rounded-full bg-gray-100 px-2.5 py-1 text-gray-600 hover:bg-gray-200"
-          >
-            編集
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={toggleArchived}
-            className="rounded-full bg-gray-100 px-2.5 py-1 text-gray-600 hover:bg-gray-200"
-          >
-            {node.archived ? "復元" : "隠す"}
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={handleDelete}
-            className="rounded-full bg-red-50 px-2.5 py-1 text-red-600 hover:bg-red-100"
-          >
-            削除
-          </button>
+          <IconButton label="編集" disabled={busy} onClick={() => setEditing((v) => !v)} />
+          <IconButton label={node.archived ? "復元" : "隠す"} disabled={busy} onClick={toggleArchived} />
+          <IconButton label="削除" tone="danger" disabled={busy} onClick={handleDelete} />
         </div>
       </div>
 
-      {editing && (
-        <div className="ml-4 mt-1">
-          <PresetForm
-            mode="edit"
-            presetId={node.id}
-            initialName={node.name}
-            initialColor={node.color}
-            onCancel={() => setEditing(false)}
-            onDone={async () => {
-              setEditing(false);
-              onChange();
-            }}
-            onError={onError}
-          />
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {editing && (
+          <div className="ml-4 mt-1.5">
+            <PresetForm
+              mode="edit"
+              presetId={node.id}
+              initialName={node.name}
+              initialColor={node.color}
+              onCancel={() => setEditing(false)}
+              onDone={async () => {
+                setEditing(false);
+                onChange();
+              }}
+              onError={onError}
+            />
+          </div>
+        )}
 
-      {addingChild && (
-        <div className="ml-4 mt-1">
-          <PresetForm
-            mode="create"
-            parentId={node.id}
-            onCancel={() => setAddingChild(false)}
-            onDone={async () => {
-              setAddingChild(false);
-              onChange();
-            }}
-            onError={onError}
-          />
-        </div>
-      )}
+        {addingChild && (
+          <div className="ml-4 mt-1.5">
+            <PresetForm
+              mode="create"
+              parentId={node.id}
+              onCancel={() => setAddingChild(false)}
+              onDone={async () => {
+                setAddingChild(false);
+                onChange();
+              }}
+              onError={onError}
+            />
+          </div>
+        )}
+      </AnimatePresence>
 
       {node.children.length > 0 && (
-        <ul className="ml-4 mt-2 flex flex-col gap-2 border-l border-gray-200 pl-3">
+        <ul className="ml-3.5 mt-2 flex flex-col gap-2 border-l pl-3" style={{ borderColor: "var(--surface-border)" }}>
           {node.children.map((child) => (
             <PresetNodeItem key={child.id} node={child} onChange={onChange} onError={onError} />
           ))}
         </ul>
       )}
     </li>
+  );
+}
+
+function IconButton({
+  label,
+  onClick,
+  disabled,
+  tone,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  tone?: "danger";
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="rounded-full px-2.5 py-1.5 transition-colors disabled:opacity-40"
+      style={
+        tone === "danger"
+          ? { background: "rgba(239,68,68,0.1)", color: "#ef4444" }
+          : { background: "var(--surface-border)", color: "var(--muted)" }
+      }
+    >
+      {label}
+    </button>
   );
 }
 
@@ -275,14 +299,14 @@ function PresetForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/50 p-2">
-      <input
-        type="color"
-        value={color}
-        onChange={(e) => setColor(e.target.value)}
-        className="h-8 w-8 shrink-0 cursor-pointer rounded border border-gray-200"
-        aria-label="色"
-      />
+    <motion.form
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      onSubmit={handleSubmit}
+      className="surface-card flex flex-col gap-3 rounded-2xl p-3"
+      style={{ borderColor: hexAlpha(color, 0.4) }}
+    >
       <input
         type="text"
         value={name}
@@ -290,22 +314,61 @@ function PresetForm({
         placeholder="名前（1〜50文字）"
         maxLength={50}
         autoFocus
-        className="flex-1 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+        className="rounded-xl border-0 px-3 py-2 text-sm outline-none ring-1 focus:ring-2"
+        style={{ background: "var(--surface-border)", color: "var(--foreground)" }}
       />
-      <button
-        type="submit"
-        disabled={submitting}
-        className="shrink-0 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
-      >
-        保存
-      </button>
-      <button
-        type="button"
-        onClick={onCancel}
-        className="shrink-0 rounded-full bg-gray-100 px-3 py-1.5 text-xs text-gray-600"
-      >
-        取消
-      </button>
-    </form>
+      <div className="flex items-center gap-1.5">
+        {SWATCHES.map((sw) => (
+          <button
+            key={sw}
+            type="button"
+            onClick={() => setColor(sw)}
+            aria-label={sw}
+            className="h-6 w-6 shrink-0 rounded-full transition-transform"
+            style={{
+              backgroundColor: sw,
+              transform: color.toLowerCase() === sw.toLowerCase() ? "scale(1.15)" : undefined,
+              boxShadow: color.toLowerCase() === sw.toLowerCase() ? `0 0 0 2px var(--surface-solid), 0 0 0 3.5px ${sw}` : undefined,
+            }}
+          />
+        ))}
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="h-6 w-6 cursor-pointer rounded-full border-0 bg-transparent"
+          aria-label="カスタム色"
+        />
+      </div>
+      <div className="flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-full px-3.5 py-1.5 text-xs"
+          style={{ background: "var(--surface-border)", color: "var(--muted)" }}
+        >
+          取消
+        </button>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="rounded-full px-3.5 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
+        >
+          保存
+        </button>
+      </div>
+    </motion.form>
   );
+}
+
+function hexAlpha(hex: string, alpha: number): string {
+  const m = hex.replace("#", "");
+  const full = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
+  const n = parseInt(full, 16);
+  if (Number.isNaN(n)) return `rgba(99,102,241,${alpha})`;
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

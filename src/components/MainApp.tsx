@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { signOut, signIn, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { PresetPicker, type SelectedPreset } from "@/components/PresetPicker";
 import { ActiveSessionView } from "@/components/ActiveSessionView";
 import { SwipeToConfirm } from "@/components/SwipeToConfirm";
+import { UserMenu } from "@/components/UserMenu";
 import { useToast, ToastViewport } from "@/components/Toast";
 import type { ActiveSessionDTO, PresetNode } from "@/types";
 
@@ -30,7 +32,6 @@ export function MainApp() {
     fetcher
   );
 
-  // タブが再表示された時にサーバー側の状態と突き合わせる（別端末で終了された場合の取り残し防止）
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === "visible") {
@@ -63,7 +64,7 @@ export function MainApp() {
       await mutateSession();
     } catch (err) {
       await mutateSession();
-      throw err; // SwipeToConfirm 側でハンドルを元に戻す
+      throw err;
     }
   };
 
@@ -90,7 +91,6 @@ export function MainApp() {
       const stillActiveSameSession =
         updated?.session && !updated.session.endedAt && updated.session.id === startedId;
       if (stillActiveSameSession) {
-        // サーバーに終了が記録されなかった（通信断など）。ハンドルを戻して再試行できるようにする。
         throw new Error("not_recorded");
       }
     }
@@ -120,67 +120,74 @@ export function MainApp() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
-        <span className="text-base font-bold tracking-tight">Stint</span>
-        <div className="flex items-center gap-3 text-sm">
-          <Link href="/presets" className="text-gray-500 hover:underline">
-            プリセット管理
-          </Link>
-          {userSession?.user?.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={userSession.user.image} alt="" className="h-7 w-7 rounded-full" />
-          )}
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="text-gray-500 hover:underline"
+      <header
+        className="flex items-center justify-between px-5 py-4"
+        style={{ paddingTop: "calc(var(--safe-top) + 1rem)" }}
+      >
+        <Link href="/" className="flex items-center gap-2">
+          <span
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-white"
+            style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
           >
-            ログアウト
-          </button>
-        </div>
+            S
+          </span>
+          <span className="text-[15px] font-semibold tracking-tight">Stint</span>
+        </Link>
+        <UserMenu user={userSession?.user} />
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
-        {sessionLoading ? (
-          <p className="text-sm text-gray-400">読み込み中…</p>
-        ) : needsReauth ? (
-          <ReauthModal onReauth={() => signIn("google", { callbackUrl: "/" })} />
-        ) : current && !current.endedAt ? (
-          <ActiveSessionView session={current} onEnd={handleEnd} />
-        ) : current && current.endedAt ? (
-          <SyncPendingView
-            session={current}
-            retrying={retrying}
-            onRetry={handleRetry}
-          />
-        ) : (
-          <div className="flex w-full max-w-sm flex-col gap-6">
-            <div className="text-center">
-              <p className="text-sm text-gray-500">これから行うタスクを選んでください</p>
-              {selected && (
-                <p className="mt-1 text-base font-medium text-gray-900">{selected.path}</p>
+      <main className="flex flex-1 flex-col items-center justify-center gap-8 px-5 py-8">
+        <AnimatePresence mode="wait">
+          {sessionLoading ? (
+            <motion.p key="loading" exit={{ opacity: 0 }} className="text-sm" style={{ color: "var(--muted)" }}>
+              読み込み中…
+            </motion.p>
+          ) : needsReauth ? (
+            <ReauthModal key="reauth" onReauth={() => signIn("google", { callbackUrl: "/" })} />
+          ) : current && !current.endedAt ? (
+            <ActiveSessionView key="active" session={current} onEnd={handleEnd} />
+          ) : current && current.endedAt ? (
+            <SyncPendingView key="pending" session={current} retrying={retrying} onRetry={handleRetry} />
+          ) : (
+            <motion.div
+              key="start"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3 }}
+              className="flex w-full max-w-sm flex-col gap-6"
+            >
+              <div className="text-center">
+                <p className="text-sm" style={{ color: "var(--muted)" }}>
+                  これから行うタスクを選んでください
+                </p>
+                {selected && (
+                  <p className="mt-1 text-lg font-semibold tracking-tight">{selected.path}</p>
+                )}
+              </div>
+
+              {presetsLoading ? (
+                <p className="text-center text-sm" style={{ color: "var(--muted)" }}>
+                  読み込み中…
+                </p>
+              ) : (
+                <PresetPicker
+                  presets={presetsData?.presets ?? []}
+                  selectedId={selected?.id ?? null}
+                  onSelect={setSelected}
+                />
               )}
-            </div>
 
-            {presetsLoading ? (
-              <p className="text-center text-sm text-gray-400">読み込み中…</p>
-            ) : (
-              <PresetPicker
-                presets={presetsData?.presets ?? []}
-                selectedId={selected?.id ?? null}
-                onSelect={setSelected}
+              <SwipeToConfirm
+                direction="start"
+                label={selected ? "スワイプして開始" : "先にタスクを選択してください"}
+                onConfirm={handleStart}
+                disabled={!selected}
+                accentColor={selected?.color ?? "#22c55e"}
               />
-            )}
-
-            <SwipeToConfirm
-              direction="start"
-              label={selected ? "スワイプして開始" : "先にタスクを選択してください"}
-              onConfirm={handleStart}
-              disabled={!selected}
-              accentColor={selected?.color ?? "#22c55e"}
-            />
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       <ToastViewport toast={toast} />
@@ -198,40 +205,66 @@ function SyncPendingView({
   onRetry: () => void;
 }) {
   return (
-    <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
-      <div className="w-full rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      className="flex w-full max-w-sm flex-col items-center gap-4 text-center"
+    >
+      <div
+        className="w-full rounded-2xl border px-4 py-3 text-sm"
+        style={{ borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)", color: "#b91c1c" }}
+      >
         カレンダーへの登録に失敗しています。作業時間は保存されているので、記録が消えることはありません。
       </div>
-      <p className="font-medium text-gray-800">{session.title}</p>
-      {session.syncError && <p className="text-xs text-gray-500">詳細: {session.syncError}</p>}
+      <div className="surface-card w-full rounded-3xl px-6 py-6">
+        <p className="font-medium">{session.title}</p>
+        {session.syncError && (
+          <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+            詳細: {session.syncError}
+          </p>
+        )}
+      </div>
       <button
         type="button"
         onClick={onRetry}
         disabled={retrying}
-        className="w-full rounded-full bg-gray-900 px-6 py-3 text-sm font-medium text-white disabled:opacity-50"
+        className="w-full rounded-full px-6 py-3.5 text-sm font-medium text-white shadow-lg disabled:opacity-50"
+        style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
       >
         {retrying ? "再送中…" : "もう一度カレンダーに登録する"}
       </button>
-    </div>
+    </motion.div>
   );
 }
 
 function ReauthModal({ onReauth }: { onReauth: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
-      <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl bg-white p-6 text-center shadow-xl">
-        <p className="text-base font-semibold text-gray-900">Googleへの再ログインが必要です</p>
-        <p className="text-sm text-gray-500">
+    <motion.div
+      key="reauth-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="surface-card flex w-full max-w-sm flex-col items-center gap-4 rounded-3xl p-7 text-center"
+      >
+        <p className="text-base font-semibold">Googleへの再ログインが必要です</p>
+        <p className="text-sm" style={{ color: "var(--muted)" }}>
           作業時間は保存されています。再ログインするとカレンダーへの登録を再開できます。
         </p>
         <button
           type="button"
           onClick={onReauth}
-          className="w-full rounded-full bg-blue-600 px-6 py-3 text-sm font-medium text-white"
+          className="w-full rounded-full px-6 py-3.5 text-sm font-medium text-white shadow-lg"
+          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
         >
           Googleに再ログイン
         </button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
