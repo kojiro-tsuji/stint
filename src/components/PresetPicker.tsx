@@ -52,7 +52,7 @@ export function PresetPicker({ presets, selectedId, onSelect }: PresetPickerProp
               : undefined
           }
         >
-          最上位
+          Top
         </button>
         {stack.map((node, i) => (
           <span key={node.id} className="flex items-center gap-1">
