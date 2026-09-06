@@ -35,7 +35,11 @@ model Account {
   @@index([userId])
 }
 
-model AuthSession {
+// Auth.js の @auth/prisma-adapter はモデル名 `Session` を前提に
+// `prisma.session.*` を直接呼び出すため、素直にこの名前のままにする
+// (以前 AuthSession にリネームしてProxyで委譲していたが、本番環境限定の
+// 原因不明のエラーの元になったため標準構成に戻した)。
+model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
@@ -44,7 +48,6 @@ model AuthSession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@map("Session")
 }
 
 model VerificationToken {
@@ -72,7 +75,7 @@ model User {
   timeZone      String    @default("Asia/Tokyo")
 
   accounts      Account[]
-  authSessions  AuthSession[]
+  sessions      Session[]
   presets       TaskPreset[]
   activeSession ActiveSession?
 
