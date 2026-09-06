@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { MainApp } from "@/components/MainApp";
+import { PresetManager } from "@/components/PresetManager";
 
-export default async function Home() {
+export default async function PresetsPage() {
   const session = await auth();
   if (!session?.user) {
     redirect("/login");
   }
 
-  return <MainApp />;
+  return <PresetManager />;
 }

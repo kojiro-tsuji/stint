@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────
+//  Auth.js 必須モデル
+// ─────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model AuthSession {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("Session")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────
+//  アプリケーションモデル
+// ─────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+
+  // 書き込み先カレンダー（v1は "primary" 固定）
+  calendarId    String    @default("primary")
+  // 予定登録時のタイムゾーン（IANA形式）
+  timeZone      String    @default("Asia/Tokyo")
+
+  accounts      Account[]
+  authSessions  AuthSession[]
+  presets       TaskPreset[]
+  activeSession ActiveSession?
+
+  createdAt     DateTime  @default(now())
+}
+
+model TaskPreset {
+  id       String       @id @default(cuid())
+  userId   String
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 自己参照：階層構造
+  parentId String?
+  parent   TaskPreset?  @relation("PresetTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children TaskPreset[] @relation("PresetTree")
+
+  name     String
+  depth    Int          @default(0) // 0 = 最上位、最大 2（= 3階層）
+  color    String? // 例: "#4285F4"
+  order    Int          @default(0) // 同一階層内の並び順
+  archived Boolean      @default(false)
+
+  activeSessions ActiveSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, parentId, order])
+}
+
+model ActiveSession {
+  // Googleカレンダーのイベントidとして直接使うため、
+  // cuid ではなく base32hex 準拠の文字列を生成して入れる
+  id String @id
+
+  userId String @unique // 1ユーザーにつき進行中は1件のみ
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  presetId String?
+  preset   TaskPreset? @relation(fields: [presetId], references: [id], onDelete: SetNull)
+
+  // 開始時点のフルパスのスナップショット（例: "勉強 / 数学 / 微分積分"）
+  title String
+  color String?
+
+  startedAt DateTime @default(now())
+
+  // 以下は同期失敗時のみ使用（成功した場合は行ごと削除される）
+  endedAt      DateTime?
+  syncAttempts Int       @default(0)
+  syncError    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([presetId])
+}
