@@ -1,9 +1,5 @@
 generator client {
-  provider      = "prisma-client-js"
-  // ローカル(Windows)開発と、Vercelのサーバーレス実行環境(Amazon Linux系)の
-  // 両方で動くクエリエンジンを生成する。native任せだとビルドマシンと実行マシンの
-  // OSが食い違い、本番でのみ "server configuration" エラーになることがある。
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
