@@ -8,12 +8,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
   },
-  logger: {
-    error(error) {
-      // デフォルトの表示は詳細を隠すため、原因調査用に生のエラーを出す
-      console.error("[auth][raw-error]", error, error?.cause ?? "");
-    },
-  },
   session: {
     strategy: "database",
     maxAge: 60 * 60 * 24 * 30, // 30日
