@@ -3,8 +3,26 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 
+/**
+ * @auth/prisma-adapter は Prisma モデル名が `Session` である前提で
+ * `p.session.*` を直接呼び出す。本アプリでは概念衝突を避けるため
+ * (作業計測の ActiveSession と紛らわしくなる) スキーマ上のモデル名を
+ * `AuthSession` にリネームしてあるので、アダプタに渡す前に
+ * `session` プロパティを `authSession` へ委譲するプロキシを挟む。
+ * 実テーブル名は schema.prisma の @@map("Session") により Auth.js が
+ * 期待する形のまま保たれている。
+ */
+const adapterPrisma = new Proxy(prisma, {
+  get(target, prop, receiver) {
+    if (prop === "session") {
+      return Reflect.get(target, "authSession", target);
+    }
+    return Reflect.get(target, prop, receiver);
+  },
+}) as typeof prisma;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(adapterPrisma),
   pages: {
     signIn: "/login",
   },
