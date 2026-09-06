@@ -1,7 +1,12 @@
 {
   "name": "stint",
   "version": "0.1.0",
+  "description": "スワイプでタスクの開始・終了を記録し、Googleカレンダーに自動登録するPWA",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kojiro-tsuji/stint.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -106,9 +106,3 @@ export function subtreeRelativeDepths(
   walk(rootId, 0);
   return result;
 }
-
-/** rootId を根としたときの部分木の最大深さ（rootId自身からの相対、0始まり） */
-export function subtreeMaxDepth(rootId: string, rows: { id: string; parentId: string | null }[]): number {
-  const depths = subtreeRelativeDepths(rootId, rows);
-  return Math.max(...depths.values());
-}

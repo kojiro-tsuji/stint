@@ -33,8 +33,3 @@ export type ApiErrorCode =
   | "REAUTH_REQUIRED"
   | "CALENDAR_ERROR"
   | "INTERNAL_ERROR";
-
-export type ApiError = {
-  error: ApiErrorCode;
-  message: string;
-};
