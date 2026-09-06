@@ -30,5 +30,3 @@ export function ElapsedTime({ startedAt, className }: { startedAt: string; class
     </span>
   );
 }
-
-export { formatElapsed };

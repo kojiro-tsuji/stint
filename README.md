@@ -127,7 +127,7 @@ Vercel + Neon を想定。`vercel-build`スクリプトが`prisma migrate deploy
 
 - **PgBouncer経由の接続で`prepared statement already exists`エラー**: サーバーレス環境やコネクションプーラー経由だと、Prismaのプリペアドステートメントが衝突することがある。`DATABASE_URL`の末尾に`&pgbouncer=true`を付けて解決
 - **Googleの`refresh_token`が2回目のログインから消える**: `prompt=consent`を付けない設計にした副作用。`signIn`コールバックで「新しい値が来たときだけ上書きする」（`??`演算子）ガードを入れないと、再ログインのたびにカレンダー連携が壊れる
-- **本番環境限定の`There is a problem with the server configuration`エラー**: 原因はサーバー側のバグではなく、開発中に`AUTH_SECRET`やDBスキーマを変更したことで無効になった、ブラウザ側の古いCookieだった。シークレットウィンドウで検証してすぐに切り分けられた
+- **本番環境限定の`There is a problem with the server configuration`エラー**: 2つの問題が重なっていた。(1) VercelプロジェクトのGit連携が、実際にpushしていたリポジトリとは別の古いスナップショットを見ていたため、修正が本番に反映されていなかった。(2) 連携を直して初めて最新コードが本番に乗ったところ、Auth.jsのモデル名を`Session`にリネームして`@auth/prisma-adapter`をそのまま渡す「標準的な」構成が、Vercelのサーバーレス環境でだけ失敗することが判明。ローカルの直接クエリでは再現せず、原因の完全特定はできなかったが、実際に動作実績のある「独自モデル名+Proxyで委譲する」構成（`src/lib/auth.ts`）に戻すことで解決した
 
 ## v1でやらないこと
 
