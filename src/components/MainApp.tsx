@@ -118,6 +118,19 @@ export function MainApp() {
     }
   };
 
+  // Googleへの再ログイン直後（callbackUrlの ?reauth=1）は、新しいトークンで
+  // カレンダー登録を自動的に再試行する。これがないと、Google側の認可は
+  // 直っていてもDB上のsyncErrorがREAUTH_REQUIREDのまま残り、
+  // ReauthModalが再表示され続けてループしているように見える。
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reauth") === "1") {
+      window.history.replaceState(null, "", window.location.pathname);
+      setTimeout(() => handleRetry(), 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="flex flex-1 flex-col">
       <header
@@ -145,7 +158,7 @@ export function MainApp() {
           ) : needsReauth ? (
             <ReauthModal
               key="reauth"
-              onReauth={() => signIn("google", { callbackUrl: "/" }, { prompt: "consent" })}
+              onReauth={() => signIn("google", { callbackUrl: "/?reauth=1" }, { prompt: "consent" })}
             />
           ) : current && !current.endedAt ? (
             <ActiveSessionView key="active" session={current} onEnd={handleEnd} />
