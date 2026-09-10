@@ -143,7 +143,10 @@ export function MainApp() {
               読み込み中…
             </motion.p>
           ) : needsReauth ? (
-            <ReauthModal key="reauth" onReauth={() => signIn("google", { callbackUrl: "/" })} />
+            <ReauthModal
+              key="reauth"
+              onReauth={() => signIn("google", { callbackUrl: "/" }, { prompt: "consent" })}
+            />
           ) : current && !current.endedAt ? (
             <ActiveSessionView key="active" session={current} onEnd={handleEnd} />
           ) : current && current.endedAt ? (
