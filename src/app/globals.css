@@ -93,3 +93,41 @@ body {
   border: 1px solid var(--surface-border);
   box-shadow: var(--shadow-soft);
 }
+
+/* スライダーのラベルに光が流れて、スライドする方向を示す */
+@keyframes swipe-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.swipe-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    var(--muted) 40%,
+    var(--foreground) 50%,
+    var(--muted) 60%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: swipe-shimmer 2.4s linear infinite;
+}
+
+/* 終了（右→左）のスライダー用 */
+.swipe-shimmer-reverse {
+  animation-direction: reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-shimmer {
+    animation: none;
+    color: var(--muted);
+  }
+}

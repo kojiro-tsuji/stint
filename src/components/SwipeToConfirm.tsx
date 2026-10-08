@@ -29,23 +29,17 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function ChevronIcon({ pointing }: { pointing: "right" | "left" }) {
+function ArrowIcon({ pointing }: { pointing: "right" | "left" }) {
   return (
     <svg
-      width="20"
-      height="20"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
       style={{ transform: pointing === "left" ? "rotate(180deg)" : undefined }}
     >
-      <path
-        d="M9 5l7 7-7 7"
-        stroke="currentColor"
-        strokeWidth={2.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -59,29 +53,6 @@ function Spinner() {
   );
 }
 
-function IdleHint({ direction }: { direction: "start" | "end" }) {
-  const pointing = direction === "start" ? "right" : "left";
-  return (
-    <div
-      className={`pointer-events-none absolute inset-y-0 flex items-center gap-0.5 ${
-        direction === "start" ? "left-[70px]" : "right-[70px]"
-      }`}
-    >
-      {[0, 1, 2].map((i) => (
-        <motion.span
-          key={i}
-          className="text-current opacity-30"
-          style={{ color: "var(--muted)" }}
-          animate={{ opacity: [0.15, 0.7, 0.15] }}
-          transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.16, ease: "easeInOut" }}
-        >
-          <ChevronIcon pointing={pointing} />
-        </motion.span>
-      ))}
-    </div>
-  );
-}
-
 export function SwipeToConfirm({
   direction,
   label,
@@ -92,7 +63,6 @@ export function SwipeToConfirm({
   const trackRef = useRef<HTMLDivElement>(null);
   const [maxX, setMaxX] = useState(0);
   const [processing, setProcessing] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const x = useMotionValue(0);
   const draggingRef = useRef(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -128,8 +98,9 @@ export function SwipeToConfirm({
   const handleScale = useTransform(progress, [0, 1], [1, 1.06]);
   const glow = useTransform(progress, [0, 1], [0, 0.9]);
 
+  // 離したときに少し行き過ぎて戻る、弾みのあるばねにしている
   const resetPosition = useCallback(() => {
-    animate(x, direction === "start" ? 0 : maxX, { type: "spring", stiffness: 340, damping: 30 });
+    animate(x, direction === "start" ? 0 : maxX, { type: "spring", stiffness: 420, damping: 20 });
   }, [x, direction, maxX]);
 
   const runConfirm = useCallback(async () => {
@@ -149,7 +120,6 @@ export function SwipeToConfirm({
 
   const handleDragEnd = () => {
     draggingRef.current = false;
-    setIsDragging(false);
     if (progress.get() >= THRESHOLD_RATIO) {
       runConfirm();
     } else {
@@ -184,6 +154,7 @@ export function SwipeToConfirm({
           style={{
             width: fillWidth,
             [direction === "start" ? "left" : "right"]: 0,
+            opacity: disabled ? 0 : 1,
             background: `linear-gradient(${direction === "start" ? "90deg" : "270deg"}, ${hexToRgba(
               accent,
               0.28
@@ -191,12 +162,17 @@ export function SwipeToConfirm({
           }}
         />
 
-        {/* アイドル時のスワイプ誘導ヒント */}
-        {!isDragging && !processing && <IdleHint direction={direction} />}
-
+        {/* ラベルはつまみの隣に寄せる（中央寄せだと誘導の矢印などと重なるため） */}
         <motion.p
-          style={{ opacity: labelOpacity }}
-          className="pointer-events-none absolute inset-0 flex items-center justify-center text-[15px] font-medium"
+          style={{
+            opacity: labelOpacity,
+            [direction === "start" ? "left" : "right"]: TRACK_PADDING + HANDLE_SIZE + 16,
+            [direction === "start" ? "right" : "left"]: 20,
+            color: disabled ? "var(--muted)" : undefined,
+          }}
+          className={`pointer-events-none absolute inset-y-0 flex items-center truncate text-[15px] font-semibold ${
+            direction === "start" ? "justify-start" : "justify-end"
+          } ${disabled || processing ? "" : "swipe-shimmer"} ${direction === "end" ? "swipe-shimmer-reverse" : ""}`}
         >
           {label}
         </motion.p>
@@ -216,12 +192,12 @@ export function SwipeToConfirm({
             height: HANDLE_SIZE,
             scale: handleScale,
             touchAction: "none",
-            background: accent,
-            boxShadow: `0 6px 16px -4px ${hexToRgba(accent, 0.55)}`,
+            background: disabled ? "var(--muted)" : accent,
+            boxShadow: disabled ? "none" : `0 6px 16px -4px ${hexToRgba(accent, 0.55)}`,
+            opacity: disabled ? 0.5 : 1,
           }}
           onDragStart={() => {
             draggingRef.current = true;
-            setIsDragging(true);
           }}
           onDragEnd={handleDragEnd}
           onPointerDown={startLongPress}
@@ -251,7 +227,7 @@ export function SwipeToConfirm({
               </motion.span>
             ) : (
               <motion.span key="icon" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <ChevronIcon pointing={direction === "start" ? "right" : "left"} />
+                <ArrowIcon pointing={direction === "start" ? "right" : "left"} />
               </motion.span>
             )}
           </AnimatePresence>

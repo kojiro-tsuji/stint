@@ -6,7 +6,7 @@ import { signIn, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
-import { PresetPicker, type SelectedPreset } from "@/components/PresetPicker";
+import { FanPicker, type SelectedPreset } from "@/components/FanPicker";
 import { ActiveSessionView } from "@/components/ActiveSessionView";
 import { SwipeToConfirm } from "@/components/SwipeToConfirm";
 import { UserMenu } from "@/components/UserMenu";
@@ -167,36 +167,35 @@ export function MainApp() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.3 }}
-              className="flex w-full max-w-sm flex-col gap-6"
+              className="flex w-full max-w-sm flex-1 flex-col"
             >
-              <div className="text-center">
-                <p className="text-sm" style={{ color: "var(--muted)" }}>
-                  これから行うタスクを選んでください
-                </p>
-                {selected && (
-                  <p className="mt-1 text-lg font-semibold tracking-tight">{selected.path}</p>
-                )}
-              </div>
+              <h1 className="text-2xl font-bold tracking-tight">何をはじめる？</h1>
 
               {presetsLoading ? (
-                <p className="text-center text-sm" style={{ color: "var(--muted)" }}>
+                <p className="mt-10 text-center text-sm" style={{ color: "var(--muted)" }}>
                   読み込み中…
                 </p>
               ) : (
-                <PresetPicker
-                  presets={presetsData?.presets ?? []}
-                  selectedId={selected?.id ?? null}
-                  onSelect={setSelected}
-                />
+                <FanPicker presets={presetsData?.presets ?? []} onSelect={setSelected} />
               )}
 
-              <SwipeToConfirm
-                direction="start"
-                label={selected ? "スワイプして開始" : "先にタスクを選択してください"}
-                onConfirm={handleStart}
-                disabled={!selected}
-                accentColor={selected?.color ?? "#2563eb"}
-              />
+              <div className="mt-auto flex flex-col gap-3 pt-4">
+                <p className="flex min-h-5 items-center gap-2 pl-1 text-sm font-semibold">
+                  {selected && (
+                    <>
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: selected.color ?? "var(--accent)" }} />
+                      <span className="truncate">{selected.path}</span>
+                    </>
+                  )}
+                </p>
+                <SwipeToConfirm
+                  direction="start"
+                  label={selected ? "右へスライドして開始" : "先にカードを選んでください"}
+                  onConfirm={handleStart}
+                  disabled={!selected}
+                  accentColor={selected?.color ?? "#2563eb"}
+                />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

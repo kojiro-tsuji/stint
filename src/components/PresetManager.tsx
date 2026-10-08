@@ -198,6 +198,8 @@ function PresetNodeItem({
             <PresetForm
               mode="create"
               parentId={node.id}
+              // 子は親のテーマカラーを初期値にする（個別に変えることもできる）
+              initialColor={node.color}
               onCancel={() => setAddingChild(false)}
               onDone={async () => {
                 setAddingChild(false);

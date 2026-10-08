@@ -72,7 +72,7 @@ export function ActiveSessionView({
       </div>
 
       <div className="w-full">
-        <SwipeToConfirm direction="end" label="スワイプして終了" onConfirm={onEnd} accentColor={accent} />
+        <SwipeToConfirm direction="end" label="左へスライドして終了" onConfirm={onEnd} accentColor={accent} />
       </div>
     </motion.div>
   );
