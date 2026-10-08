@@ -93,7 +93,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
             <button
               type="button"
               role="menuitem"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ callbackUrl: "/signin" })}
               className="block w-full rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
             >
               ログアウト

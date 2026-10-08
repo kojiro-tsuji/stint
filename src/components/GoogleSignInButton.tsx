@@ -2,11 +2,20 @@
 
 import { signIn } from "next-auth/react";
 
-export function GoogleSignInButton() {
+export function GoogleSignInButton({
+  label = "Googleではじめる",
+  selectAccount = false,
+}: {
+  label?: string;
+  /** 登録済みユーザー向け。Googleのアカウント選択画面を必ず出し、別アカウントへの切り替えを可能にする */
+  selectAccount?: boolean;
+}) {
   return (
     <button
       type="button"
-      onClick={() => signIn("google", { callbackUrl: "/" })}
+      onClick={() =>
+        signIn("google", { callbackUrl: "/" }, selectAccount ? { prompt: "select_account" } : undefined)
+      }
       className="flex w-full items-center justify-center gap-3 rounded-full px-6 py-3.5 text-sm font-medium shadow-sm transition active:scale-[0.98]"
       style={{ background: "var(--surface-solid)", border: "1px solid var(--surface-border)", color: "var(--foreground)" }}
     >
@@ -28,7 +37,7 @@ export function GoogleSignInButton() {
           d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97L3.95 7.3C4.66 5.17 6.65 3.58 9 3.58z"
         />
       </svg>
-      Googleではじめる
+      {label}
     </button>
   );
 }

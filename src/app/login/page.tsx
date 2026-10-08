@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BrandMark } from "@/components/BrandMark";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { AuthFooter } from "@/components/AuthFooter";
 
 const HOURS = ["9:00", "10:00", "11:00", "12:00"];
 const HOUR_HEIGHT = 48;
@@ -40,19 +41,13 @@ export default async function LoginPage() {
 
       <div className="mt-10 flex flex-col gap-4">
         <GoogleSignInButton />
-        <p className="text-center text-[11px] leading-relaxed" style={{ color: "var(--muted)" }}>
-          「Googleで確認されていません」と表示された場合は、
-          <br />
-          「詳細」→「stintに移動」で続行できます。
+        <p className="text-center text-sm" style={{ color: "var(--muted)" }}>
+          すでに登録済みの方は{" "}
+          <Link href="/signin" className="font-medium underline" style={{ color: "var(--accent)" }}>
+            ログイン
+          </Link>
         </p>
-        <nav className="flex justify-center gap-5 text-xs" style={{ color: "var(--muted)" }}>
-          <Link href="/privacy" className="underline">
-            プライバシーポリシー
-          </Link>
-          <Link href="/terms" className="underline">
-            利用規約
-          </Link>
-        </nav>
+        <AuthFooter />
       </div>
     </main>
   );

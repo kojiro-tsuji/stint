@@ -146,5 +146,8 @@ for (const size of [192, 512]) {
 // iOS は透明部分を黒で塗りつぶし、角丸のマスクも自分でかけるため、角丸なしの正方形にする
 writeFileSync("public/icons/apple-touch-icon.png", generatePng(180, { rounded: false }));
 console.log("generated public/icons/apple-touch-icon.png");
+// Google Cloud Console の OAuth 同意画面に登録するロゴ（120×120 の正方形。登録すると審査が必要になる）
+writeFileSync("public/icons/oauth-logo-120.png", generatePng(120, { rounded: false }));
+console.log("generated public/icons/oauth-logo-120.png");
 writeFileSync("src/app/favicon.ico", generateIco([16, 32, 48]));
 console.log("generated src/app/favicon.ico");
