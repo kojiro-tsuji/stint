@@ -28,7 +28,7 @@ export function GoogleSignInButton() {
           d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97L3.95 7.3C4.66 5.17 6.65 3.58 9 3.58z"
         />
       </svg>
-      Googleでログイン
+      Googleではじめる
     </button>
   );
 }

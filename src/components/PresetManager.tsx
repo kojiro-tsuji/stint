@@ -11,8 +11,8 @@ import type { PresetNode } from "@/types";
 
 type PresetsResponse = { presets: PresetNode[] };
 
-const DEFAULT_COLOR = "#6366f1";
-const SWATCHES = ["#6366f1", "#ec4899", "#f97316", "#eab308", "#22c55e", "#14b8a6", "#0ea5e9", "#8b5cf6"];
+const DEFAULT_COLOR = "#2563eb";
+const SWATCHES = ["#2563eb", "#ec4899", "#f97316", "#eab308", "#22c55e", "#14b8a6", "#0ea5e9", "#8b5cf6"];
 
 function countDescendants(node: PresetNode): number {
   return node.children.reduce((sum, c) => sum + 1 + countDescendants(c), 0);
@@ -353,7 +353,7 @@ function PresetForm({
           type="submit"
           disabled={submitting}
           className="rounded-full px-3.5 py-1.5 text-xs font-medium text-white disabled:opacity-50"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
+          style={{ background: "var(--accent)" }}
         >
           保存
         </button>
@@ -366,7 +366,7 @@ function hexAlpha(hex: string, alpha: number): string {
   const m = hex.replace("#", "");
   const full = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
   const n = parseInt(full, 16);
-  if (Number.isNaN(n)) return `rgba(99,102,241,${alpha})`;
+  if (Number.isNaN(n)) return `rgba(37,99,235,${alpha})`;
   const r = (n >> 16) & 255;
   const g = (n >> 8) & 255;
   const b = n & 255;

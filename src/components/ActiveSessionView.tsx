@@ -15,7 +15,7 @@ export function ActiveSessionView({
   onEnd: () => Promise<void>;
 }) {
   const [isStale, setIsStale] = useState(false);
-  const accent = session.color ?? "#ef4444";
+  const accent = session.color ?? "#2563eb";
 
   useEffect(() => {
     const check = () => {

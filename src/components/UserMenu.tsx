@@ -41,7 +41,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
         aria-haspopup="menu"
         aria-expanded={open}
         className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-sm font-semibold text-white shadow-sm"
-        style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
+        style={{ background: "var(--accent)" }}
       >
         {user?.image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -73,6 +73,22 @@ export function UserMenu({ user }: { user: SessionUser }) {
               className="block rounded-xl px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
             >
               設定
+            </Link>
+            <Link
+              href="/privacy"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block rounded-xl px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              プライバシーポリシー
+            </Link>
+            <Link
+              href="/terms"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block rounded-xl px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              利用規約
             </Link>
             <button
               type="button"

@@ -92,8 +92,8 @@ export function PresetPicker({ presets, selectedId, onSelect }: PresetPickerProp
                 style={
                   isSelected
                     ? {
-                        borderColor: hexToRgba(node.color ?? "#6366f1", 0.55),
-                        boxShadow: `0 0 0 1.5px ${hexToRgba(node.color ?? "#6366f1", 0.4)}`,
+                        borderColor: hexToRgba(node.color ?? "#2563eb", 0.55),
+                        boxShadow: `0 0 0 1.5px ${hexToRgba(node.color ?? "#2563eb", 0.4)}`,
                       }
                     : undefined
                 }
@@ -148,7 +148,7 @@ function hexToRgba(hex: string, alpha: number): string {
   const m = hex.replace("#", "");
   const full = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
   const n = parseInt(full, 16);
-  if (Number.isNaN(n)) return `rgba(99,102,241,${alpha})`;
+  if (Number.isNaN(n)) return `rgba(37,99,235,${alpha})`;
   const r = (n >> 16) & 255;
   const g = (n >> 8) & 255;
   const b = n & 255;

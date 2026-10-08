@@ -10,6 +10,7 @@ import { PresetPicker, type SelectedPreset } from "@/components/PresetPicker";
 import { ActiveSessionView } from "@/components/ActiveSessionView";
 import { SwipeToConfirm } from "@/components/SwipeToConfirm";
 import { UserMenu } from "@/components/UserMenu";
+import { BrandMark } from "@/components/BrandMark";
 import { useToast, ToastViewport } from "@/components/Toast";
 import type { ActiveSessionDTO, PresetNode } from "@/types";
 
@@ -138,12 +139,7 @@ export function MainApp() {
         style={{ paddingTop: "calc(var(--safe-top) + 1rem)" }}
       >
         <Link href="/" className="flex items-center gap-2">
-          <span
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-white"
-            style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
-          >
-            S
-          </span>
+          <BrandMark size={32} />
           <span className="text-[15px] font-semibold tracking-tight">Stint</span>
         </Link>
         <UserMenu user={userSession?.user} />
@@ -199,7 +195,7 @@ export function MainApp() {
                 label={selected ? "スワイプして開始" : "先にタスクを選択してください"}
                 onConfirm={handleStart}
                 disabled={!selected}
-                accentColor={selected?.color ?? "#22c55e"}
+                accentColor={selected?.color ?? "#2563eb"}
               />
             </motion.div>
           )}
@@ -246,7 +242,7 @@ function SyncPendingView({
         onClick={onRetry}
         disabled={retrying}
         className="w-full rounded-full px-6 py-3.5 text-sm font-medium text-white shadow-lg disabled:opacity-50"
-        style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
+        style={{ background: "var(--accent)" }}
       >
         {retrying ? "再送中…" : "もう一度カレンダーに登録する"}
       </button>
@@ -276,7 +272,7 @@ function ReauthModal({ onReauth }: { onReauth: () => void }) {
           type="button"
           onClick={onReauth}
           className="w-full rounded-full px-6 py-3.5 text-sm font-medium text-white shadow-lg"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }}
+          style={{ background: "var(--accent)" }}
         >
           Googleに再ログイン
         </button>

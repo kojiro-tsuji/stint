@@ -23,8 +23,8 @@ export function useToast() {
 }
 
 const TONE_STYLE: Record<ToastTone, { bg: string; text: string }> = {
-  error: { bg: "linear-gradient(135deg, #ef4444, #dc2626)", text: "#fff" },
-  success: { bg: "linear-gradient(135deg, #22c55e, #16a34a)", text: "#fff" },
+  error: { bg: "#dc2626", text: "#fff" },
+  success: { bg: "#15803d", text: "#fff" },
   info: { bg: "var(--surface-solid)", text: "var(--foreground)" },
 };
 

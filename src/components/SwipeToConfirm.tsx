@@ -22,7 +22,7 @@ function hexToRgba(hex: string, alpha: number): string {
   const m = hex.replace("#", "");
   const full = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
   const n = parseInt(full, 16);
-  if (Number.isNaN(n)) return `rgba(99,102,241,${alpha})`;
+  if (Number.isNaN(n)) return `rgba(37,99,235,${alpha})`;
   const r = (n >> 16) & 255;
   const g = (n >> 8) & 255;
   const b = n & 255;
@@ -96,7 +96,7 @@ export function SwipeToConfirm({
   const x = useMotionValue(0);
   const draggingRef = useRef(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const accent = accentColor ?? "#6366f1";
+  const accent = accentColor ?? "#2563eb";
 
   useEffect(() => {
     const el = trackRef.current;
@@ -216,7 +216,7 @@ export function SwipeToConfirm({
             height: HANDLE_SIZE,
             scale: handleScale,
             touchAction: "none",
-            background: `linear-gradient(135deg, ${accent}, ${hexToRgba(accent, 0.75)})`,
+            background: accent,
             boxShadow: `0 6px 16px -4px ${hexToRgba(accent, 0.55)}`,
           }}
           onDragStart={() => {

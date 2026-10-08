@@ -4,17 +4,21 @@
   --background: #f4f4f6;
   --background-glow: radial-gradient(
       circle at 15% -10%,
-      rgba(99, 102, 241, 0.16),
+      rgba(37, 99, 235, 0.14),
       transparent 55%
     ),
     radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.12), transparent 45%);
   --foreground: #16161c;
   --muted: #6b6b76;
-  --surface: rgba(255, 255, 255, 0.72);
   --surface-solid: #ffffff;
   --surface-border: rgba(20, 20, 30, 0.08);
-  --accent: #6366f1;
-  --accent-strong: #4f46e5;
+  --accent: #2563eb;
+  /* ログイン画面のカレンダー見本で使う予定ブロックの色 */
+  --event-blue-bg: #e7f0fe;
+  --event-blue-fg: #1d4ed8;
+  --event-orange-bg: #fdf0e3;
+  --event-orange-fg: #9a4b0f;
+  --live: #15803d;
   --shadow-soft: 0 1px 2px rgba(16, 16, 24, 0.04), 0 8px 24px -8px rgba(16, 16, 24, 0.12);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -34,17 +38,20 @@
     --background: #0b0b10;
     --background-glow: radial-gradient(
         circle at 15% -10%,
-        rgba(99, 102, 241, 0.28),
+        rgba(59, 130, 246, 0.26),
         transparent 55%
       ),
       radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.16), transparent 45%);
     --foreground: #f2f2f5;
     --muted: #93939f;
-    --surface: rgba(255, 255, 255, 0.06);
     --surface-solid: #17171d;
     --surface-border: rgba(255, 255, 255, 0.09);
-    --accent: #818cf8;
-    --accent-strong: #6366f1;
+    --accent: #3b82f6;
+    --event-blue-bg: #1b2a47;
+    --event-blue-fg: #93c5fd;
+    --event-orange-bg: #36251a;
+    --event-orange-fg: #fdba74;
+    --live: #4ade80;
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -12px rgba(0, 0, 0, 0.55);
   }
 }
@@ -82,9 +89,7 @@ body {
 }
 
 .surface-card {
-  background: var(--surface);
+  background: var(--surface-solid);
   border: 1px solid var(--surface-border);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
 }
