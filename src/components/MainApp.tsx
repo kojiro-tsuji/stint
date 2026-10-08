@@ -12,9 +12,10 @@ import { SwipeToConfirm } from "@/components/SwipeToConfirm";
 import { UserMenu } from "@/components/UserMenu";
 import { BrandMark } from "@/components/BrandMark";
 import { useToast, ToastViewport } from "@/components/Toast";
-import type { ActiveSessionDTO, PresetNode } from "@/types";
+import { MAX_SESSION_HOURS } from "@/types";
+import type { ActiveSessionDTO, AutoEndedDTO, PresetNode } from "@/types";
 
-type SessionResponse = { session: ActiveSessionDTO | null };
+type SessionResponse = { session: ActiveSessionDTO | null; autoEnded?: AutoEndedDTO | null };
 type PresetsResponse = { presets: PresetNode[] };
 
 export function MainApp() {
@@ -45,6 +46,19 @@ export function MainApp() {
 
   const current = sessionData?.session ?? null;
   const needsReauth = current?.syncError === "REAUTH_REQUIRED";
+  const autoEnded = sessionData?.autoEnded ?? null;
+
+  // 止め忘れて24時間を超えた計測は、サーバーが自動で終了している（そのレスポンスでだけ autoEnded が返る）
+  useEffect(() => {
+    if (!autoEnded) return;
+    show(
+      autoEnded.result === "synced"
+        ? `${MAX_SESSION_HOURS}時間を超えたため自動で終了し、カレンダーに登録しました`
+        : `${MAX_SESSION_HOURS}時間を超えたため自動で終了しました`,
+      "info",
+      6000
+    );
+  }, [autoEnded, show]);
 
   const handleStart = async () => {
     if (!selected) return;
@@ -157,7 +171,12 @@ export function MainApp() {
               onReauth={() => signIn("google", { callbackUrl: "/?reauth=1" }, { prompt: "consent" })}
             />
           ) : current && !current.endedAt ? (
-            <ActiveSessionView key="active" session={current} onEnd={handleEnd} />
+            <ActiveSessionView
+              key="active"
+              session={current}
+              onEnd={handleEnd}
+              onReachedMax={() => mutateSession()}
+            />
           ) : current && current.endedAt ? (
             <SyncPendingView key="pending" session={current} retrying={retrying} onRetry={handleRetry} />
           ) : (

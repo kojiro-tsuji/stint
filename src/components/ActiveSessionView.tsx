@@ -1,26 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ElapsedTime } from "@/components/ElapsedTime";
 import { SwipeToConfirm } from "@/components/SwipeToConfirm";
-import { STALE_SESSION_HOURS } from "@/types";
+import { MAX_SESSION_HOURS, STALE_SESSION_HOURS } from "@/types";
 import type { ActiveSessionDTO } from "@/types";
 
 export function ActiveSessionView({
   session,
   onEnd,
+  onReachedMax,
 }: {
   session: ActiveSessionDTO;
   onEnd: () => Promise<void>;
+  /** 画面を開いたまま上限時間に達したとき。サーバーに問い合わせ直して自動終了させる */
+  onReachedMax: () => void;
 }) {
   const [isStale, setIsStale] = useState(false);
   const accent = session.color ?? "#2563eb";
+  // 親が毎回新しい関数を渡してもタイマーを作り直さないよう、最新の関数を参照で持つ
+  const onReachedMaxRef = useRef(onReachedMax);
+  useEffect(() => {
+    onReachedMaxRef.current = onReachedMax;
+  }, [onReachedMax]);
 
   useEffect(() => {
+    let notified = false;
     const check = () => {
       const hours = (Date.now() - new Date(session.startedAt).getTime()) / (1000 * 60 * 60);
       setIsStale(hours >= STALE_SESSION_HOURS);
+      if (hours >= MAX_SESSION_HOURS && !notified) {
+        notified = true;
+        onReachedMaxRef.current();
+      }
     };
     check();
     const t = setInterval(check, 60_000);
@@ -43,7 +56,7 @@ export function ActiveSessionView({
             color: "#b45309",
           }}
         >
-          まだ計測中です（{STALE_SESSION_HOURS}時間以上経過）
+          まだ計測中です。開始から{MAX_SESSION_HOURS}時間で自動的に終了します
         </div>
       )}
 
