@@ -167,7 +167,7 @@ export function FanPicker({ presets, onSelect }: FanPickerProps) {
           <p className="text-[13px] leading-relaxed" style={{ color: "var(--muted)" }}>
             カードを1枚選んでください。
             <br />
-            横にドラッグすると扇が回ります。
+            横にドラッグするとカードが回ります。
           </p>
         ) : (
           stack.map((node, j) => {
