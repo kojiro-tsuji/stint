@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ElapsedTime } from "@/components/ElapsedTime";
 import { SwipeToConfirm } from "@/components/SwipeToConfirm";
+import { DEFAULT_COLOR } from "@/lib/colors";
 import { MAX_SESSION_HOURS, STALE_SESSION_HOURS } from "@/types";
 import type { ActiveSessionDTO } from "@/types";
 
@@ -18,7 +19,7 @@ export function ActiveSessionView({
   onReachedMax: () => void;
 }) {
   const [isStale, setIsStale] = useState(false);
-  const accent = session.color ?? "#2563eb";
+  const accent = session.color ?? DEFAULT_COLOR;
   // 親が毎回新しい関数を渡してもタイマーを作り直さないよう、最新の関数を参照で持つ
   const onReachedMaxRef = useRef(onReachedMax);
   useEffect(() => {

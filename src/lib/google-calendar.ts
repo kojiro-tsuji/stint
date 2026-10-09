@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getAccessToken, GoogleAuthError } from "@/lib/google-token";
+import { toCalendarColorId } from "@/lib/colors";
 import type { ActiveSession, User } from "@prisma/client";
 
 export type SyncResult =
@@ -46,6 +47,8 @@ export async function syncSessionToCalendar(
   const body = {
     id: session.id,
     summary: session.title,
+    // 11色以外（未設定・旧色）は undefined になり、JSON から落ちてカレンダーの既定色になる
+    colorId: toCalendarColorId(session.color),
     start: {
       dateTime: session.startedAt.toISOString(),
       timeZone: user.timeZone,

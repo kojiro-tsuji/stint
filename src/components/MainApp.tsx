@@ -6,6 +6,7 @@ import { signIn, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
+import { DEFAULT_COLOR } from "@/lib/colors";
 import { FanPicker, type SelectedPreset } from "@/components/FanPicker";
 import { ActiveSessionView } from "@/components/ActiveSessionView";
 import { SwipeToConfirm } from "@/components/SwipeToConfirm";
@@ -202,7 +203,7 @@ export function MainApp() {
                 <p className="flex min-h-5 items-center gap-2 pl-1 text-sm font-semibold">
                   {selected && (
                     <>
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: selected.color ?? "var(--accent)" }} />
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: selected.color ?? DEFAULT_COLOR }} />
                       <span className="truncate">{selected.path}</span>
                     </>
                   )}
@@ -212,7 +213,7 @@ export function MainApp() {
                   label={selected ? "右へスライドして開始" : "先にカードを選んでください"}
                   onConfirm={handleStart}
                   disabled={!selected}
-                  accentColor={selected?.color ?? "#2563eb"}
+                  accentColor={selected?.color ?? DEFAULT_COLOR}
                 />
               </div>
             </motion.div>

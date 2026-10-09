@@ -8,11 +8,9 @@ import { fetcher } from "@/lib/fetcher";
 import { useToast, ToastViewport } from "@/components/Toast";
 import { MAX_DEPTH } from "@/types";
 import type { PresetNode } from "@/types";
+import { CALENDAR_COLORS, DEFAULT_COLOR, isCalendarColor } from "@/lib/colors";
 
 type PresetsResponse = { presets: PresetNode[] };
-
-const DEFAULT_COLOR = "#2563eb";
-const SWATCHES = ["#2563eb", "#ec4899", "#f97316", "#eab308", "#22c55e", "#14b8a6", "#0ea5e9", "#8b5cf6"];
 
 function countDescendants(node: PresetNode): number {
   return node.children.reduce((sum, c) => sum + 1 + countDescendants(c), 0);
@@ -270,7 +268,10 @@ function PresetForm({
   onError: (message: string) => void;
 }) {
   const [name, setName] = useState(initialName);
-  const [color, setColor] = useState(initialColor ?? DEFAULT_COLOR);
+  // 11色以外の古い色が入っている場合は既定色から選び直してもらう
+  const [color, setColor] = useState(
+    initialColor && isCalendarColor(initialColor) ? initialColor : DEFAULT_COLOR
+  );
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -319,28 +320,26 @@ function PresetForm({
         className="rounded-xl border-0 px-3 py-2 text-sm outline-none ring-1 focus:ring-2"
         style={{ background: "var(--surface-border)", color: "var(--foreground)" }}
       />
-      <div className="flex items-center gap-1.5">
-        {SWATCHES.map((sw) => (
-          <button
-            key={sw}
-            type="button"
-            onClick={() => setColor(sw)}
-            aria-label={sw}
-            className="h-6 w-6 shrink-0 rounded-full transition-transform"
-            style={{
-              backgroundColor: sw,
-              transform: color.toLowerCase() === sw.toLowerCase() ? "scale(1.15)" : undefined,
-              boxShadow: color.toLowerCase() === sw.toLowerCase() ? `0 0 0 2px var(--surface-solid), 0 0 0 3.5px ${sw}` : undefined,
-            }}
-          />
-        ))}
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-          className="h-6 w-6 cursor-pointer rounded-full border-0 bg-transparent"
-          aria-label="カスタム色"
-        />
+      <div className="flex flex-wrap items-center gap-1.5">
+        {CALENDAR_COLORS.map((sw) => {
+          const selected = color.toLowerCase() === sw.hex.toLowerCase();
+          return (
+            <button
+              key={sw.hex}
+              type="button"
+              onClick={() => setColor(sw.hex)}
+              aria-label={sw.name}
+              aria-pressed={selected}
+              title={sw.name}
+              className="h-6 w-6 shrink-0 rounded-full transition-transform"
+              style={{
+                backgroundColor: sw.hex,
+                transform: selected ? "scale(1.15)" : undefined,
+                boxShadow: selected ? `0 0 0 2px var(--surface-solid), 0 0 0 3.5px ${sw.hex}` : undefined,
+              }}
+            />
+          );
+        })}
       </div>
       <div className="flex justify-end gap-2">
         <button

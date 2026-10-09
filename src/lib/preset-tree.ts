@@ -63,6 +63,22 @@ export function buildFullPath(
   return parts.join(" / ");
 }
 
+/** 自分か、いちばん近い祖先に設定された色を返す（画面の扇と同じ解決順）。どこにもなければ null */
+export function resolveInheritedColor(
+  preset: { id: string; color: string | null; parentId: string | null },
+  byId: Map<string, { id: string; color: string | null; parentId: string | null }>
+): string | null {
+  let current = preset;
+  const seen = new Set([current.id]);
+  while (!current.color && current.parentId) {
+    const parent = byId.get(current.parentId);
+    if (!parent || seen.has(parent.id)) break; // 循環防御
+    seen.add(parent.id);
+    current = parent;
+  }
+  return current.color;
+}
+
 /** node（自分自身を含む）配下の子孫すべてのIDを集める */
 export function collectDescendantIds(rootId: string, rows: { id: string; parentId: string | null }[]): Set<string> {
   const childrenOf = new Map<string, string[]>();

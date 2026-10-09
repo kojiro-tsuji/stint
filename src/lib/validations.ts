@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { isCalendarColor } from "@/lib/colors";
 
-const hexColor = /^#[0-9A-Fa-f]{6}$/;
+const calendarColor = z.string().refine(isCalendarColor, "色はGoogleカレンダーの11色から選んでください");
 
 export const createPresetSchema = z.object({
   name: z
@@ -9,7 +10,7 @@ export const createPresetSchema = z.object({
     .min(1, "名前は1文字以上で入力してください")
     .max(50, "名前は50文字以内で入力してください"),
   parentId: z.string().min(1).optional(),
-  color: z.string().regex(hexColor, "色は#RRGGBB形式で指定してください").optional(),
+  color: calendarColor.optional(),
 });
 
 export const updatePresetSchema = z.object({
@@ -20,7 +21,7 @@ export const updatePresetSchema = z.object({
     .max(50, "名前は50文字以内で入力してください")
     .optional(),
   parentId: z.string().min(1).nullable().optional(),
-  color: z.string().regex(hexColor, "色は#RRGGBB形式で指定してください").optional(),
+  color: calendarColor.optional(),
   order: z.number().int().optional(),
   archived: z.boolean().optional(),
 });

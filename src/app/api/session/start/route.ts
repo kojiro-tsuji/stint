@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiErrorResponse, handleApiError, ApiException } from "@/lib/api-error";
 import { startSessionSchema } from "@/lib/validations";
-import { buildFullPath } from "@/lib/preset-tree";
+import { buildFullPath, resolveInheritedColor } from "@/lib/preset-tree";
 import { generateEventId } from "@/lib/event-id";
 import { toSessionDTO } from "@/lib/session-dto";
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
           userId,
           presetId: preset.id,
           title,
-          color: preset.color,
+          color: resolveInheritedColor(preset, byId),
         },
       });
       return NextResponse.json({ session: toSessionDTO(created) }, { status: 201 });

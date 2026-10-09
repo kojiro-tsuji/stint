@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, animate, useMotionValue, useTransform, type MotionValue } from "framer-motion";
 import type { PresetNode } from "@/types";
+import { DEFAULT_COLOR } from "@/lib/colors";
 
 export type SelectedPreset = {
   id: string;
@@ -28,7 +29,6 @@ const PIVOT_PX = 560;
 /** 横ドラッグ1pxあたりの回転量（度） */
 const DRAG_DEG_PER_PX = 0.14;
 const FLY_MS = 320;
-const FALLBACK_COLOR = "#2563eb";
 /** 吸い付きの強さ（0〜1）。カードが中央に来る位置の付近ほど、指の動きに対して扇が重くなる */
 const DETENT_STRENGTH = 0.35;
 /** 端を越えて引いたときに伸びる上限の目安（度）。小さいほど重い */
@@ -66,22 +66,11 @@ function resolveColor(chain: PresetNode[]): string {
   for (let i = chain.length - 1; i >= 0; i--) {
     if (chain[i].color) return chain[i].color!;
   }
-  return FALLBACK_COLOR;
+  return DEFAULT_COLOR;
 }
 
-/** 背景色に対して読みやすい文字色（白では WCAG 3:1 を下回る明るい色は濃い文字にする） */
-function readableText(hex: string): string {
-  const m = hex.replace("#", "");
-  const full = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
-  const n = parseInt(full, 16);
-  if (Number.isNaN(n)) return "#ffffff";
-  const lin = (v: number) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-  };
-  const l = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
-  return l > 0.3 ? "#16161c" : "#ffffff";
-}
+/** 色付きカードの文字色。明るい色でも見た目を揃えるため常に白にする */
+const CARD_TEXT = "#ffffff";
 
 function vibrate(ms = 10) {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(ms);
@@ -193,7 +182,7 @@ export function FanPicker({ presets, onSelect }: FanPickerProps) {
                 animate={{ opacity: 1, y: 0, scale: 1, rotate: j % 2 === 0 ? -4 : 3 }}
                 transition={{ type: "spring", stiffness: 320, damping: 22 }}
                 className="flex h-[88px] w-[64px] shrink-0 items-start rounded-xl p-2 text-left text-xs font-bold shadow-md"
-                style={{ background: color, color: readableText(color) }}
+                style={{ background: color, color: CARD_TEXT }}
               >
                 {node.name}
               </motion.button>
@@ -251,7 +240,7 @@ export function FanPicker({ presets, onSelect }: FanPickerProps) {
           >
             <div
               className="flex h-[250px] w-[180px] flex-col justify-between rounded-3xl p-[18px] shadow-xl"
-              style={{ background: chosenColor, color: readableText(chosenColor) }}
+              style={{ background: chosenColor, color: CARD_TEXT }}
             >
               <span className="text-xs opacity-80">
                 {chosenChain.length > 1 ? chosenChain.slice(0, -1).map((n) => n.name).join(" / ") : "カテゴリ全体"}
@@ -316,7 +305,7 @@ function FanCard({
   const kids = activeChildren(item.node.children).length;
   const name = isAll ? `${item.node.name} 全体` : item.node.name;
   const hint = isAll ? "まとめて記録" : kids > 0 ? `${kids}件 ›` : "これにする";
-  const text = isAll ? color : readableText(color);
+  const text = isAll ? color : CARD_TEXT;
 
   const target =
     leaving === null
