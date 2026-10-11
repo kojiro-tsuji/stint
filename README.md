@@ -246,3 +246,5 @@ Vercel + Neon を想定。`vercel-build`スクリプトが`prisma migrate deploy
 - アプリ側での作業履歴の保持（Googleカレンダーが唯一の記録元）
 - オフライン対応
 - Google OAuthアプリ審査（個人利用の範囲を超えたら検討）
+
+<!-- 同期確認用: ブラウザ版 Claude Code から編集 (2026-10-11) -->
